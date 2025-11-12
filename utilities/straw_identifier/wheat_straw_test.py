@@ -10,7 +10,7 @@ def search_images(term, max_images=1, retries=3, delay=2):
         try:
             with DDGS() as ddgs:
                 # safesearch can be: "off", "moderate", "strict"
-                results = ddgs.images(keywords=term, max_results=max_images, safesearch="moderate")
+                results = ddgs.images(term, max_results=max_images, safesearch="moderate")
                 urls = [r["image"] for r in results if "image" in r]
                 if urls:
                     return urls
