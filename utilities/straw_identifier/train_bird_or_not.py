@@ -150,25 +150,33 @@ def train_model(data_path: Path, n_epochs: int = 3, bs: int = 32):
         Trained learner
     """
 
+    # Quick sanity check: how many images did we actually get?
+    all_files = get_image_files(data_path)
+    print(f"Total images found: {len(all_files)} in {data_path}")
+
     # Remove corrupted/failed images
     print("Verifying images...")
-    failed = verify_images(get_image_files(data_path))
+    failed = verify_images(all_files)
     failed_count = len(failed)
     print(f"Found {failed_count} failed images.")
     failed.map(Path.unlink)
 
-    # Create DataLoaders
-    print("Creating DataLoaders...")
-    dls = DataBlock(
-        blocks=(ImageBlock, CategoryBlock),
-        get_items=get_image_files,
-        splitter=RandomSplitter(valid_pct=0.2, seed=42),
-        get_y=parent_label,
-        item_tfms=[Resize(192, method='squish')]
-    ).dataloaders(data_path, bs=bs)
+    # Re-scan after deleting bad ones
+    all_files = get_image_files(data_path)
+    print(f"Images remaining after cleanup: {len(all_files)}")
 
-    # Show a sample batch (works best in notebooks, but harmless in scripts)
-    dls.show_batch(max_n=6)
+    # Create DataLoaders using the simple high-level API
+    print("Creating DataLoaders (ImageDataLoaders.from_folder)...")
+    dls = ImageDataLoaders.from_folder(
+        data_path,
+        valid_pct=0.2,
+        seed=42,
+        item_tfms=Resize(192, method='squish'),
+        bs=bs
+    )
+
+    # Optional: comment out if you don't care to see the batch / avoid matplotlib popping up
+    # dls.show_batch(max_n=6)
 
     # Create and train the model
     print("Training model...")
