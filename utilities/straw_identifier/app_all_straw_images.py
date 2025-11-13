@@ -71,7 +71,8 @@ def download_one(url: str, out_dir: pathlib.Path, filename: str) -> pathlib.Path
 
 def draw_image_card(idx: int, img: Image.Image, local_path: pathlib.Path):
     col = st.container()
-    col.image(img, caption=f"{local_path.name}", use_container_width=True)
+    # use_container_width=True  ->  width="stretch"
+    col.image(img, caption=f"{local_path.name}", width="stretch")
     with open(local_path, "rb") as f:
         col.download_button(
             label="Download original",
