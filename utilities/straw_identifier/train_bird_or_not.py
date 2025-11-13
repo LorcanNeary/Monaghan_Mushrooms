@@ -14,6 +14,65 @@ from time import sleep
 from fastdownload import download_url
 from fastai.vision.all import *
 
+# -------------------------------------------------------------------------
+# DuckDuckGo Image Search Helper (from fastbook)
+# -------------------------------------------------------------------------
+
+import time, random, json
+from fastcore.all import L
+
+def search_images(term, max_images=30):
+    """
+    Search DuckDuckGo for images matching `term`, return list of URLs.
+    This is the same function used in fastbook but copied here so the
+    script can run outside the fastbook environment.
+    """
+
+    # DuckDuckGo query URL
+    url = 'https://duckduckgo.com/'
+    params = {'q': term}
+
+    # First request to obtain a token ("vqd")
+    res = requests.get(url, params=params)
+    res.raise_for_status()
+
+    # Extract vqd token
+    token_text = res.text
+    start = token_text.find('vqd=')
+    if start == -1:
+        raise Exception("Could not find vqd token in DuckDuckGo response")
+    start += 5
+    end = token_text.find("'", start)
+    vqd = token_text[start:end]
+
+    # Second request: actual image search
+    request_url = 'https://duckduckgo.com/i.js'
+    params = {
+        'l': 'us-en',
+        'o': 'json',
+        'q': term,
+        'vqd': vqd,
+        'p': '1',
+        'f': ',,,'
+    }
+
+    urls = []
+    while len(urls) < max_images:
+        try:
+            res = requests.get(request_url, params=params, timeout=10)
+            res.raise_for_status()
+            data = res.json()
+            urls.extend(L(data['results']).itemgot('image'))
+            if 'next' not in data:
+                break
+            request_url = url + data['next']
+            time.sleep(0.2 + random.random() / 10)
+        except Exception:
+            break
+
+    return urls[:max_images]
+
+
 # -----------------------------------------------------------------------------
 # 0. Quick sanity check images (optional, can be removed if you like)
 # -----------------------------------------------------------------------------
