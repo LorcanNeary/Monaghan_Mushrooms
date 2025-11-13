@@ -13,27 +13,29 @@ def search_wikimedia(term, max_images=5):
         "iiprop": "url",
         "format": "json"
     }
+    headers = {
+        # Use a descriptive UA per Wikimedia's API etiquette
+        "User-Agent": "MonaghanMushroomsImageFetcher/0.1 (contact: your-email@example.com)"
+    }
 
-    r = requests.get(url, params=params)
-    data = r.json()
+    r = requests.get(url, params=params, headers=headers, timeout=15)
 
-    if "query" not in data or "pages" not in data["query"]:
+    # Debug: if request fails or returns non-JSON, show it
+    try:
+        r.raise_for_status()
+    except Exception as e:
+        print(f"[search_wikimedia] HTTP error: {e}")
+        print("[search_wikimedia] Response text (truncated):")
+        print(r.text[:500])
         return []
 
-    urls = []
-    for _, page in data["query"]["pages"].items():
-        if "imageinfo" in page:
-            urls.append(page["imageinfo"][0]["url"])
+    try:
+        data = r.json()
+    except Exception as e:
+        print(f"[search_wikimedia] JSON decode error: {e}")
+        print("[search_wikimedia] Raw response (truncated):")
+        print(r.text[:500])
+        return []
 
-    return urls[:max_images]
-
-
-# Test it
-urls = search_wikimedia("bird", max_images=5)
-print(urls)
-
-# Download one
-download_url(urls[0], "bird.jpg")
-im = Image.open("bird.jpg")
-im.thumbnail((256, 256))
-im.show()
+    if "query" not in data or "pages" not in data["query"]:
+        print("[search_wikimedia] No 'query/pages' in response.")
