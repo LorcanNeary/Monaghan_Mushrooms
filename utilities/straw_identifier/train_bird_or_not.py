@@ -13,7 +13,6 @@ from time import sleep
 
 from fastdownload import download_url
 from fastai.vision.all import *
-from fastbook import *
 
 # -----------------------------------------------------------------------------
 # 0. Quick sanity check images (optional, can be removed if you like)
