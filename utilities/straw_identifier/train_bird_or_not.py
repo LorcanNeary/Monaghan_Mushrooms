@@ -21,11 +21,13 @@ from fastai.vision.all import *
 import time, random, json
 from fastcore.all import L
 
-def search_images(term, max_images=30):
+def search_images(term, max_images=5):
     """
     Search DuckDuckGo for images matching `term`, return list of URLs.
     This is the same function used in fastbook but copied here so the
     script can run outside the fastbook environment.
+    Also I was throttling the DuckDuckGo servers too much and got blocked,
+    so I added a small delay between requests and also reduced the images to 5 at each retrieval.
     """
 
     # DuckDuckGo query URL
