@@ -1,4 +1,4 @@
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 from fastdownload import download_url
 from fastai.vision.all import *
 from PIL import Image
@@ -6,7 +6,7 @@ from PIL import Image
 # Search for bird photos (DuckDuckGo)
 def search_images(term, max_images=1):
     with DDGS() as ddgs:
-        return [r["image"] for r in ddgs.images(keywords=term, max_results=max_images)]
+        return [r["image"] for r in ddgs.images(term, max_results=max_images)]
 
 urls = search_images('bird photos', max_images=1)
 print("Image URL:", urls[0])
